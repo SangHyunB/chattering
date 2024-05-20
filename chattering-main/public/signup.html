@@ -5,26 +5,33 @@
   <link rel="stylesheet" href="css/signup.css">
 </head>
 <body>
-<form action="/action_page.php" style="border:5px solid #1566bd">
-  <div class="container">
+<div class="container">
+<form method="POST" action="/signup" style="border:5px solid #1566bd">
     <img src="images/lion.png">
     <h1>회원가입</h1>
     <p>가입하고 채팅창 서비스를 이용해보세요!</p>
     <hr>
 
     <label for="User_ID"><b>User ID</b></label>
-    <input type="text" placeholder="Enter ID" name="User_ID" required>
+    <input type="text" placeholder="Enter ID" name="username" required>
 
     <label for="psw"><b>Password</b></label>
-    <input type="password" placeholder="Enter Password" name="psw" required>
+    <input type="password" placeholder="Enter Password" name="password" required>
     
 
     <div class="clearfix">
       <button type="button" class="cancelbtn">Cancel</button>
       <button type="submit" class="signupbtn">Sign Up</button>
     </div>
-  </div>
+</div>
 </form>
+
+<script>
+  document.querySelector('.cancelbtn').addEventListener('click', function() {
+    window.location.href = 'login.html';
+  });
+</script>
+<script src="app.js"></script>
 
 </body>
 </html>
