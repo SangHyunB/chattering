@@ -3,7 +3,6 @@
 /**
  * Module dependencies.
  */
-
 const bodyParser = require('body-parser');
 var express = require('express');
 const morgan = require('morgan');
@@ -76,7 +75,9 @@ app.post('/login', (req, res) => {
 
   // 사용자가 존재하는지 확인
   if (user) {
-      res.redirect('index.html');
+   
+
+    res.redirect(`index.html?username=${user.username}&id=${user.id}`);
   
   } else {
       res.send('로그인 실패: 유저 정보가 일치하지 않습니다.');

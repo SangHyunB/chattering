@@ -1,30 +1,40 @@
-body{
-	width: 600px;
+body {
+	width: 1000px;
 	margin: 0 auto;
-	border: 5px solid #02499B;
+	border: 10px solid #021224;
 	margin-top: 5%;
+	background-color: rgb(238, 231, 210);
 }
 .users{
 	float : right;
 	margin-right: 30%;
 }
 .messages {
+	position: relative;
+	bottom: 74px; /* 상단 여백 조절 */
+	left: 234px; /* 우측 여백 조절 */
 	width: 500px;
-	height: 400px;
-	margin: auto;
+	height: 598px;
+	margin: auto;  
 	border : 1px solid black;
 	padding: 1em;
+	overflow-y: scroll;
 }
 .message_form,
 .change_name_form{
 	padding: 1em;
 }
 .center{
-	width: 600px;
+	
+	width: 1000px;
 	height: 700px;
 }
 .textinput{
+	position: relative;
+	bottom: 92px; /* 상단 여백 조절 */
+	left: 422px; /* 우측 여백 조절 */
 	margin-left: 3%;
-	width: 520px;
-	height: 40px;
+	width: 526px;
+	height: 67px;
+	background-color: rgb(238, 231, 210);
 }
