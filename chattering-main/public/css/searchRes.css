@@ -1,0 +1,7 @@
+.search_Res{
+    padding: 10px 20px;
+}
+
+.search_Res:hover{
+    background-color: #fefefe;
+}
