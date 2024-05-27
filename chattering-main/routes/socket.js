@@ -1,3 +1,4 @@
+
 // Keep track of which names are used so that there are no duplicates
 var userNames = (function () {
   var names = {};
@@ -27,7 +28,7 @@ var userNames = (function () {
   // serialize claimed names as an array
   var get = function () {
     var res = [];
-    for (user in names) {
+    for (var user in names) { // user 변수 선언 누락 수정
       res.push(user);
     }
 
@@ -65,9 +66,12 @@ module.exports = function (socket) {
 
   // broadcast a user's message to other users
   socket.on('send:message', function (data) {
+    console.log('Received message:', data); // 메시지 데이터 확인을 위해 추가
     socket.broadcast.emit('send:message', {
-      user: name,
-      text: data.text
+      user: data.user, // 수정된 부분: 클라이언트에서 받은 user 필드를 그대로 사용
+      message: data.message, // 수정된 부분: 클라이언트에서 받은 message 필드를 그대로 사용
+      time: data.time, // 시간 필드 추가
+      room: data.room // 방 정보 필드 추가
     });
   });
 
@@ -89,6 +93,7 @@ module.exports = function (socket) {
       fn(false);
     }
   });
+  
 
   // clean up when a user leaves, and broadcast it to other users
   socket.on('disconnect', function () {
