@@ -23,13 +23,24 @@ function UsersList({ users }) {
 function Message({ message }) {
     const time = new Date(message.time);
     const formattedTime = isNaN(time.getTime()) ? "Invalid Date" : time.toLocaleString();
+    const queryString = window.location.search;
+    const urlParams = new URLSearchParams(queryString);
+    const username = urlParams.get('username');
+    const isUser = message.user === username;
 
+   
     return (
-        <div className='message'>
-            <strong>{message.user || "Guest"} :</strong> <span>{message.message || ""}</span>
-            <div>Sent at: {formattedTime}</div>
+        <div className={`message ${isUser ? 'message-user' : 'message-other'}`}>      
+            <div className='msgBlock' >
+                <strong>{message.user || "Guest"} :</strong> <span>{message.message || ""}</span>
+                <div>Sent at: {formattedTime}</div>
+            </div>
         </div>
     );
+
+    
+ 
+  
 }
 
 function MessageList({ messages }) {
@@ -207,9 +218,9 @@ function ChatApp() {
     };
    
     return (
-        <div className='center'>
-            <NewRoom get_roomName={get_roomName}/>
+        <div className='center'>    
             <Search setResults={setResults} rooms={rooms} />
+            <NewRoom get_roomName={get_roomName}/>
             <SearchResLi results={results} onRoomSelect={handleRoomSelect} />
             <MessageList messages={messages} />
             <MessageForm onMessageSubmit={handleMessageSubmit} user={user} selectedRoom={selectedRoom} />

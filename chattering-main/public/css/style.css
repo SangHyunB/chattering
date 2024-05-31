@@ -1,40 +1,117 @@
 body {
-	width: 1000px;
+	width: 1300px;
 	margin: 0 auto;
-	border: 10px solid #021224;
+	border: 10px solid rgb(35, 35, 150);
 	margin-top: 5%;
-	background-color: rgb(238, 231, 210);
+	background-color: rgb(232, 241, 241);
+	border-radius: 15px;
 }
 .users{
 	float : right;
 	margin-right: 30%;
 }
 .messages {
-	position: relative;
-	bottom: 74px; /* 상단 여백 조절 */
-	left: 234px; /* 우측 여백 조절 */
-	width: 500px;
-	height: 598px;
+	position: absolute;
+	bottom: 207px; /* 상단 여백 조절 */
+	left: 836px; /* 우측 여백 조절 */
+	width: 736px;
+	height: 601px;
 	margin: auto;  
-	border : 1px solid black;
+	border : 1px solid rgb(35, 35, 150);
 	padding: 1em;
-	overflow-y: scroll;
+	overflow-y: auto;
+	border-left-width: 6px;
+	border-top-right-radius: 10px;
+	border-width: 6px;
+	border-right-color: rgb(35, 35, 150) ;
+	border-top-color: rgb(35, 35, 150) ;
+	
 }
+.messages::-webkit-scrollbar{  width: 10px  }
 .message_form,
 .change_name_form{
 	padding: 1em;
 }
 .center{
-	
-	width: 1000px;
+	width: 1300px;
 	height: 700px;
 }
 .textinput{
-	position: relative;
-	bottom: 92px; /* 상단 여백 조절 */
-	left: 422px; /* 우측 여백 조절 */
+	position: absolute;
+	bottom: 140px; /* 상단 여백 조절 */
+	left: 778px; /* 우측 여백 조절 */
 	margin-left: 3%;
-	width: 526px;
-	height: 67px;
-	background-color: rgb(238, 231, 210);
+	width: 764px;
+	height: 65px;
+	border-left-width: 6px;
+	border-bottom-right-radius: 10px;
+	border: 10px solid rgb(35, 35, 150);
+	border-width: 6px;
 }
+.NewRoomForm{
+	
+    position: relative;
+	display: flex;
+	top: 575px;
+	left:15px;
+}
+
+.create_button {
+	height: 42px;
+	font-size: 15px;
+	text-align: center;
+	cursor: pointer;
+	outline: none;
+	color: #fff;
+	background-color: #3e57e0;
+	border: none;
+	border-top-right-radius: 15px;
+	border-bottom-right-radius: 15px;
+	box-shadow: 0 4px #1c2f9c;
+	
+  }
+  
+.create_button:hover {background-color: #16257c}
+  
+.create_input{
+	height: 40px;
+	outline: none;
+	font-size: 15px;
+	border-color: #16257c;
+	border-top-left-radius: 15px;
+	border-bottom-left-radius: 15px;
+}
+.message {
+    display: flex;
+    flex-direction: column; /* 수직 정렬 */
+    margin-bottom: 10px;
+}
+
+.message-user {
+    align-items: flex-end; /* 오른쪽 정렬 */
+}
+
+.message-other {
+    align-items: flex-start; /* 왼쪽 정렬 */
+}
+
+.msgBlock {
+    max-width: 60%;
+    padding: 10px;
+    border-radius: 10px;
+    min-height: 50px; /* 각 메시지 블록의 최소 높이 설정 */
+}
+
+.message-user .msgBlock {
+	background-color: #fff59d;
+ 
+   
+}
+
+.message-other .msgBlock {
+    background-color: #e0f7fa;
+    text-align: left;
+}
+
+
+

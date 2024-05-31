@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import { Bs1Circle } from "react-icons/bs";
+
 
 function SearchBar({ setResults, rooms }) {
   const [input, setInput] = useState('');

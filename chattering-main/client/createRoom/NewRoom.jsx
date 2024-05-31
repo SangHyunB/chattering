@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { createRoom, fetchRoomNames } from '../Indexdb.jsx';
 
+
 function NewRoomForm({ onCreateRoom }) {
   const [newRoomName, setNewRoomName] = useState('');
 
@@ -19,15 +20,17 @@ function NewRoomForm({ onCreateRoom }) {
   
 
   return (
-    <form onSubmit={handleSubmit}>
+    <form className='NewRoomForm' onSubmit={handleSubmit}>
       <input
+        className='create_input'
         type="text"
         placeholder="새로운 방 이름"
         value={newRoomName}
         onChange={handleChange}
       />
-      <button type="submit">방 생성</button>
+      <button className='create_button' type="submit">방 생성</button>
     </form>
+   
   );
 }
 
@@ -59,17 +62,8 @@ function NewRoom({ get_roomName }) {
 
 
   return (
-      <div>
-        
-          <h1>채팅방 목록</h1>
-          {/* 방 생성 폼 컴포넌트 */}
-          <NewRoomForm onCreateRoom={handleCreateRoom} />
-          {/* 방 목록 */}
-          <ul>
-              {rooms.map((room, index) => (
-                  <li key={index}>{room}</li>
-              ))}
-          </ul>
+      <div>    
+          <NewRoomForm  onCreateRoom={handleCreateRoom} />         
       </div>
   );
 }
