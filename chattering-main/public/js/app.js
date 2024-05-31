@@ -1,4 +1,144 @@
 (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
+/*export function openDB(roomName) {
+    return new Promise((resolve, reject) => {
+        let request = indexedDB.open("chatDB",1);
+
+        request.onupgradeneeded = function(event) {
+            let db = event.target.result;
+            // Handle upgrades if needed
+        };
+
+        request.onerror = function() {
+            console.error('ERROR', request.error);
+            reject(request.error);
+        };
+
+        request.onsuccess = function() {
+            let db = request.result;
+            console.log("request success");
+            resolve(db);
+        };
+    });
+}*/
+
+'use strict';
+
+Object.defineProperty(exports, '__esModule', {
+    value: true
+});
+exports.createRoom = createRoom;
+exports.addData = addData;
+exports.fetchRoomData = fetchRoomData;
+exports.fetchRoomNames = fetchRoomNames;
+
+function createRoom(roomName, callback) {
+    return new Promise(function (resolve, reject) {
+
+        var storedRooms = localStorage.getItem('' + roomName);
+
+        var request = indexedDB.open(roomName);
+        request.onupgradeneeded = function (event) {
+            var db = event.target.result;
+            if (!db.objectStoreNames.contains(roomName)) {
+                var _objectStore = db.createObjectStore(roomName, { autoIncrement: true });
+                // room 필드 추가
+                _objectStore.createIndex(roomName, roomName, { unique: false });
+            }
+            var transaction = event.target.transaction;
+            var objectStore = transaction.objectStore(roomName);
+
+            var startData = { user: '운영자', message: roomName + '방이 개설되었습니다!', time: new Date().toISOString(), room: roomName };
+            //const startData = { room: roomName, user: '운영자', message: `${roomName}방이 개설되었습니다!`, time: new Date().toISOString()};
+            objectStore.add(startData);
+        };
+
+        request.onsuccess = function (event) {
+            var db = event.target.result;
+            db.close(); // DB를 닫아줍니다.
+            if (callback && typeof callback === 'function') {
+                callback(storedRooms); // 콜백 함수를 호출하여 storedRooms 값을 전달합니다.
+            }
+            resolve(db);
+        };
+
+        request.onerror = function (event) {
+            console.error("Failed to create room", event.target.error);
+            reject(event.target.error);
+        };
+    });
+}
+
+function addData(roomName, message) {
+    var request = indexedDB.open(roomName);
+
+    request.onsuccess = function (event) {
+        var db = event.target.result;
+        var transaction = db.transaction([roomName], 'readwrite');
+        var store = transaction.objectStore(roomName);
+
+        var req = store.add(message);
+        req.onsuccess = function () {
+            console.log("Data stored successfully", req.result);
+        };
+
+        req.onerror = function () {
+            console.error('Data store failed', req.error);
+        };
+
+        transaction.oncomplete = function () {
+            db.close();
+        };
+    };
+
+    request.onerror = function (event) {
+        console.error('Failed to open database', event.target.error);
+    };
+}
+
+/*export function addData(db,roomName, message) {
+  
+    const transaction = db.transaction([roomName], 'readwrite');
+    const store = transaction.objectStore(roomName);
+
+    let req = store.add(message); // message 전체 객체를 넣어줘야 함
+    req.onsuccess = function() {
+        console.log("store 성공", req.result);
+    };
+
+    req.onerror = function() {
+        console.error('store 실패', req.error);
+    };
+}*/
+
+function fetchRoomData(db, roomName, callback) {
+    var transaction = db.transaction([roomName], 'readonly');
+    var store = transaction.objectStore(roomName);
+    var request = store.getAll();
+
+    request.onsuccess = function (event) {
+        callback(event.target.result);
+    };
+
+    request.onerror = function (event) {
+        console.error('Failed to fetch room data', event.target.error);
+    };
+}
+
+function fetchRoomNames(roomName, callback) {
+    var transaction = roomName.transaction([roomName], 'readonly'); // database 이름 사용
+    var store = transaction.objectStore(roomName); // database 이름 사용
+    var request = store.get('room');
+
+    request.onsuccess = function (event) {
+        callback(event.target.result);
+    };
+
+    request.onerror = function (event) {
+        console.error('Failed to fetch room names', event.target.error);
+    };
+}
+
+},{}],2:[function(require,module,exports){
 'use strict';
 
 var _slicedToArray = (function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i['return']) _i['return'](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError('Invalid attempt to destructure non-iterable instance'); } }; })();
@@ -25,303 +165,450 @@ var _searchSearchJsx = require('./search/search.jsx');
 
 var _searchSearchJsx2 = _interopRequireDefault(_searchSearchJsx);
 
+var _IndexdbJsx = require('./Indexdb.jsx');
+
+// 수정된 부분
+
+var _createRoomNewRoomJsx = require('./createRoom/NewRoom.jsx');
+
+var _createRoomNewRoomJsx2 = _interopRequireDefault(_createRoomNewRoomJsx);
+
 var socket = io.connect();
 
 function UsersList(_ref) {
-  var users = _ref.users;
+    var users = _ref.users;
 
-  return _react2['default'].createElement(
-    'div',
-    { className: 'users' },
-    _react2['default'].createElement(
-      'h3',
-      null,
-      '참여자들'
-    ),
-    _react2['default'].createElement(
-      'ul',
-      null,
-      users.map(function (user, i) {
-        return _react2['default'].createElement(
-          'li',
-          { key: i },
-          user
-        );
-      })
-    )
-  );
+    return _react2['default'].createElement(
+        'div',
+        { className: 'users' },
+        _react2['default'].createElement(
+            'h3',
+            null,
+            '참여자들'
+        ),
+        _react2['default'].createElement(
+            'ul',
+            null,
+            users.map(function (user, i) {
+                return _react2['default'].createElement(
+                    'li',
+                    { key: i },
+                    user
+                );
+            })
+        )
+    );
 }
 
 function Message(_ref2) {
-  var message = _ref2.message;
+    var message = _ref2.message;
 
-  var time = new Date(message.time);
-  var formattedTime = isNaN(time.getTime()) ? "Invalid Date" : time.toLocaleString();
+    var time = new Date(message.time);
+    var formattedTime = isNaN(time.getTime()) ? "Invalid Date" : time.toLocaleString();
 
-  return _react2['default'].createElement(
-    'div',
-    { className: 'message' },
-    _react2['default'].createElement(
-      'strong',
-      null,
-      message.user || "Guest",
-      ' :'
-    ),
-    ' ',
-    _react2['default'].createElement(
-      'span',
-      null,
-      message.message || ""
-    ),
-    _react2['default'].createElement(
-      'div',
-      null,
-      'Sent at: ',
-      formattedTime
-    )
-  );
+    return _react2['default'].createElement(
+        'div',
+        { className: 'message' },
+        _react2['default'].createElement(
+            'strong',
+            null,
+            message.user || "Guest",
+            ' :'
+        ),
+        ' ',
+        _react2['default'].createElement(
+            'span',
+            null,
+            message.message || ""
+        ),
+        _react2['default'].createElement(
+            'div',
+            null,
+            'Sent at: ',
+            formattedTime
+        )
+    );
 }
 
 function MessageList(_ref3) {
-  var messages = _ref3.messages;
+    var messages = _ref3.messages;
 
-  var messageRooms = Object.keys(messages);
+    var messageRooms = Object.keys(messages);
 
-  return _react2['default'].createElement(
-    'div',
-    { className: 'messages' },
-    messageRooms.map(function (roomName, roomIndex) {
-      return _react2['default'].createElement(
+    return _react2['default'].createElement(
         'div',
-        { key: roomIndex },
-        _react2['default'].createElement(
-          'h2',
-          null,
-          roomName
-        ),
-        messages[roomName].map(function (message, messageIndex) {
-          return _react2['default'].createElement(Message, { key: messageIndex, message: message });
+        { className: 'messages' },
+        messageRooms.map(function (roomName, roomIndex) {
+            return _react2['default'].createElement(
+                'div',
+                { key: roomIndex },
+                _react2['default'].createElement(
+                    'h2',
+                    null,
+                    roomName
+                ),
+                messages[roomName].map(function (message, messageIndex) {
+                    return _react2['default'].createElement(Message, { key: messageIndex, message: message });
+                })
+            );
         })
-      );
-    })
-  );
+    );
 }
 
 function MessageForm(_ref4) {
-  var onMessageSubmit = _ref4.onMessageSubmit;
-  var user = _ref4.user;
-  var selectedRoom = _ref4.selectedRoom;
+    var onMessageSubmit = _ref4.onMessageSubmit;
+    var user = _ref4.user;
+    var selectedRoom = _ref4.selectedRoom;
 
-  var _useState = (0, _react.useState)('');
+    var _useState = (0, _react.useState)('');
 
-  var _useState2 = _slicedToArray(_useState, 2);
+    var _useState2 = _slicedToArray(_useState, 2);
 
-  var text = _useState2[0];
-  var setText = _useState2[1];
+    var text = _useState2[0];
+    var setText = _useState2[1];
 
-  var handleSubmit = function handleSubmit(e) {
-    e.preventDefault();
-    if (!text.trim()) return; // 공백 메시지 방지
-    var currentTime = new Date().toISOString();
-    var message = { user: user, message: text, time: currentTime, room: selectedRoom };
-    console.log('Sending message:', message); // 메시지 전송 전 확인
-    onMessageSubmit(message);
-    setText('');
-  };
+    var handleSubmit = function handleSubmit(e) {
+        e.preventDefault();
+        if (!text.trim()) return; // 공백 메시지 방지
+        var currentTime = new Date().toISOString();
+        var message = { user: user, message: text, time: currentTime, room: selectedRoom };
+        console.log('Sending message:', message); // 메시지 전송 전 확인
+        onMessageSubmit(message);
+        setText('');
+    };
 
-  var changeHandler = function changeHandler(e) {
-    setText(e.target.value);
-  };
+    var changeHandler = function changeHandler(e) {
+        setText(e.target.value);
+    };
 
-  return _react2['default'].createElement(
-    'div',
-    { className: 'message_form' },
-    _react2['default'].createElement(
-      'form',
-      { onSubmit: handleSubmit },
-      _react2['default'].createElement('input', {
-        placeholder: '메시지 입력',
-        className: 'textinput',
-        onChange: changeHandler,
-        value: text
-      })
-    )
-  );
+    return _react2['default'].createElement(
+        'div',
+        { className: 'message_form' },
+        _react2['default'].createElement(
+            'form',
+            { onSubmit: handleSubmit },
+            _react2['default'].createElement('input', {
+                placeholder: '메시지 입력',
+                className: 'textinput',
+                onChange: changeHandler,
+                value: text
+            })
+        )
+    );
 }
 
 function ChatApp() {
-  var _useState3 = (0, _react.useState)([]);
+    var _useState3 = (0, _react.useState)([]);
 
-  var _useState32 = _slicedToArray(_useState3, 2);
+    var _useState32 = _slicedToArray(_useState3, 2);
 
-  var users = _useState32[0];
-  var setUsers = _useState32[1];
+    var users = _useState32[0];
+    var setUsers = _useState32[1];
 
-  var _useState4 = (0, _react.useState)({});
+    var _useState4 = (0, _react.useState)({});
 
-  var _useState42 = _slicedToArray(_useState4, 2);
+    var _useState42 = _slicedToArray(_useState4, 2);
 
-  var messages = _useState42[0];
-  var setMessages = _useState42[1];
+    var messages = _useState42[0];
+    var setMessages = _useState42[1];
 
-  var _useState5 = (0, _react.useState)('');
+    var _useState5 = (0, _react.useState)('');
 
-  var _useState52 = _slicedToArray(_useState5, 2);
+    var _useState52 = _slicedToArray(_useState5, 2);
 
-  var user = _useState52[0];
-  var setUser = _useState52[1];
+    var user = _useState52[0];
+    var setUser = _useState52[1];
 
-  var _useState6 = (0, _react.useState)([]);
+    var _useState6 = (0, _react.useState)([]);
 
-  var _useState62 = _slicedToArray(_useState6, 2);
+    var _useState62 = _slicedToArray(_useState6, 2);
 
-  var rooms = _useState62[0];
-  var setRooms = _useState62[1];
+    var rooms = _useState62[0];
+    var setRooms = _useState62[1];
 
-  var _useState7 = (0, _react.useState)([]);
+    var _useState7 = (0, _react.useState)([]);
 
-  var _useState72 = _slicedToArray(_useState7, 2);
+    var _useState72 = _slicedToArray(_useState7, 2);
 
-  var results = _useState72[0];
-  var setResults = _useState72[1];
+    var results = _useState72[0];
+    var setResults = _useState72[1];
 
-  var _useState8 = (0, _react.useState)(null);
+    var _useState8 = (0, _react.useState)(null);
 
-  var _useState82 = _slicedToArray(_useState8, 2);
+    var _useState82 = _slicedToArray(_useState8, 2);
 
-  var selectedRoom = _useState82[0];
-  var setSelectedRoom = _useState82[1];
+    var selectedRoom = _useState82[0];
+    var setSelectedRoom = _useState82[1];
 
-  (0, _react.useEffect)(function () {
-    socket.on('init', _initialize);
-    socket.on('send:message', _messageReceive);
-    socket.on('user:join', _userJoin);
-    socket.on('user:left', _userLeft);
-    socket.on('change:name', _userNameChange);
+    (0, _react.useEffect)(function () {
+        socket.on('init', _initialize);
+        socket.on('send:message', _messageReceive);
+        socket.on('user:join', _userJoin);
+        socket.on('user:left', _userLeft);
+        socket.on('change:name', _userNameChange);
 
-    console.log("Initial messages from server:", messages);
-    fetch('http://localhost:3003/rooms').then(function (response) {
-      return response.json();
-    }).then(function (data) {
-      var roomNames = Object.keys(data);
-      setRooms(roomNames);
-    })['catch'](function (error) {
-      return console.error('Error fetching chat data:', error);
-    });
+        var roomKeys = [];
+        for (var key in localStorage) {
+            if (localStorage.hasOwnProperty(key)) {
+                // 속성이 직접 소유한 것인지 확인
+                roomKeys.push(key);
+            }
+        }
+        console.log(roomKeys);
+        setRooms(roomKeys);
 
-    var queryString = window.location.search;
-    var urlParams = new URLSearchParams(queryString);
-    var username = urlParams.get('username');
-    console.log("Extracted username from URL:", username); // 디버깅을 위해 추가
-    if (username) {
-      setUser(username);
-      socket.emit('user:join', { user: username });
-    }
+        var queryString = window.location.search;
+        var urlParams = new URLSearchParams(queryString);
+        var username = urlParams.get('username');
+        if (username) {
+            setUser(username);
+            socket.emit('user:join', { user: username });
+        }
 
-    return function () {
-      socket.off('init', _initialize);
-      socket.off('send:message', _messageReceive);
-      socket.off('user:join', _userJoin);
-      socket.off('user:left', _userLeft);
-      socket.off('change:name', _userNameChange);
+        return function () {
+            socket.off('init', _initialize);
+            socket.off('send:message', _messageReceive);
+            socket.off('user:join', _userJoin);
+            socket.off('user:left', _userLeft);
+            socket.off('change:name', _userNameChange);
+        };
+    }, []);
+
+    var _initialize = function _initialize(data) {
+        setUsers(data.users);
     };
-  }, []);
 
-  var _initialize = function _initialize(data) {
-    console.log("Initialized users from server:", data.users);
-    setUsers(data.users);
-  };
+    var get_roomName = function get_roomName(newRooms) {
+        setRooms(function (prevRooms) {
+            return [].concat(_toConsumableArray(prevRooms), _toConsumableArray(newRooms));
+        });
+    };
 
-  var _messageReceive = function _messageReceive(message) {
-    console.log("New message received from server:", message); // 디버깅을 위해 추가
-    setMessages(function (prevMessages) {
-      var room = message.room;
-      var newMessages = _extends({}, prevMessages);
-      if (!newMessages[room]) {
-        newMessages[room] = [];
-      }
-      newMessages[room].push(message);
-      return newMessages;
-    });
-  };
+    var _messageReceive = function _messageReceive(message) {
+        setMessages(function (prevMessages) {
+            var room = message.room;
+            var newMessages = _extends({}, prevMessages);
+            if (!newMessages[room]) {
+                newMessages[room] = [];
+            }
+            newMessages[room].push(message);
+            return newMessages;
+        });
+    };
 
-  var _userJoin = function _userJoin(data) {
-    console.log("User joined:", data.user); // 디버깅을 위해 추가
-    if (data.user) {
-      setUsers(function (prevUsers) {
-        return [].concat(_toConsumableArray(prevUsers), [data.user]);
-      });
-    }
-  };
+    var _userJoin = function _userJoin(data) {
+        if (data.user) {
+            setUsers(function (prevUsers) {
+                return [].concat(_toConsumableArray(prevUsers), [data.user]);
+            });
+        }
+    };
 
-  var _userLeft = function _userLeft(data) {
-    console.log("User left:", data.user); // 디버깅을 위해 추가
-    setUsers(function (prevUsers) {
-      return prevUsers.filter(function (user) {
-        return user !== data.user;
-      });
-    });
-  };
+    var _userLeft = function _userLeft(data) {
+        setUsers(function (prevUsers) {
+            return prevUsers.filter(function (user) {
+                return user !== data.user;
+            });
+        });
+    };
 
-  var _userNameChange = function _userNameChange(data) {
-    console.log("User name changed:", data.oldName, "to", data.newName); // 디버깅을 위해 추가
-    setUsers(function (prevUsers) {
-      return prevUsers.map(function (user) {
-        return user === data.oldName ? data.newName : user;
-      });
-    });
-  };
+    var _userNameChange = function _userNameChange(data) {
+        setUsers(function (prevUsers) {
+            return prevUsers.map(function (user) {
+                return user === data.oldName ? data.newName : user;
+            });
+        });
+    };
 
-  var handleMessageSubmit = function handleMessageSubmit(message) {
-    console.log("Message submitted:", message);
-    if (!message.user || !message.message || !message.time || !message.room) {
-      console.error("Invalid message data:", message);
-      return;
-    }
+    var handleMessageSubmit = function handleMessageSubmit(message) {
+        if (!message.user || !message.message || !message.time || !message.room) {
+            console.error("Invalid message data:", message);
+            return;
+        }
 
-    setMessages(function (prevMessages) {
-      var room = message.room;
-      var newMessages = _extends({}, prevMessages);
-      if (!newMessages[room]) {
-        newMessages[room] = [];
-      }
-      newMessages[room].push(message);
-      return newMessages;
-    });
+        setMessages(function (prevMessages) {
+            var room = message.room;
+            var newMessages = _extends({}, prevMessages);
+            if (!newMessages[room]) {
+                newMessages[room] = [];
+            }
+            newMessages[room].push(message);
+            return newMessages;
+        });
 
-    socket.emit('send:message', message);
-  };
+        (0, _IndexdbJsx.addData)(message.room, message);
 
-  var handleRoomSelect = function handleRoomSelect(roomName) {
-    setSelectedRoom(roomName);
-    fetch('http://localhost:3003/rooms').then(function (response) {
-      return response.json();
-    }).then(function (data) {
-      var chatMessages = data[roomName] || [];
-      chatMessages.sort(function (a, b) {
-        return new Date(a.time) - new Date(b.time);
-      });
-      setMessages(_defineProperty({}, roomName, chatMessages)); // Update messages for the selected room
-    })['catch'](function (error) {
-      return console.error('Error fetching chat data:', error);
-    });
-  };
+        socket.emit('send:message', message);
+    };
 
-  return _react2['default'].createElement(
-    'div',
-    { className: 'center' },
-    _react2['default'].createElement(_searchSearchJsx2['default'], { setResults: setResults, rooms: rooms }),
-    _react2['default'].createElement(_searchSearchResLiJsx2['default'], { results: results, onRoomSelect: handleRoomSelect }),
-    _react2['default'].createElement(MessageList, { messages: messages }),
-    _react2['default'].createElement(MessageForm, { onMessageSubmit: handleMessageSubmit, user: user, selectedRoom: selectedRoom })
-  );
+    var handleRoomSelect = function handleRoomSelect(roomName) {
+        setSelectedRoom(roomName);
+
+        // IndexedDB에서 선택한 방의 채팅 내용을 가져옵니다.
+        var request = indexedDB.open(roomName);
+
+        request.onsuccess = function (event) {
+            var db = event.target.result;
+            (0, _IndexdbJsx.fetchRoomData)(db, roomName, function (chatMessages) {
+                // 가져온 채팅 메시지를 시간 순서대로 정렬합니다.
+                chatMessages.sort(function (a, b) {
+                    return new Date(a.time) - new Date(b.time);
+                });
+                // 선택한 방에 해당하는 메시지를 설정합니다.
+                setMessages(_defineProperty({}, roomName, chatMessages));
+                db.close();
+            });
+        };
+
+        request.onerror = function (event) {
+            console.error('Failed to open database', event.target.error);
+        };
+    };
+
+    return _react2['default'].createElement(
+        'div',
+        { className: 'center' },
+        _react2['default'].createElement(_createRoomNewRoomJsx2['default'], { get_roomName: get_roomName }),
+        _react2['default'].createElement(_searchSearchJsx2['default'], { setResults: setResults, rooms: rooms }),
+        _react2['default'].createElement(_searchSearchResLiJsx2['default'], { results: results, onRoomSelect: handleRoomSelect }),
+        _react2['default'].createElement(MessageList, { messages: messages }),
+        _react2['default'].createElement(MessageForm, { onMessageSubmit: handleMessageSubmit, user: user, selectedRoom: selectedRoom })
+    );
 }
 
 // ReactDOM rendering code
 var root = (0, _reactDomClient.createRoot)(document.getElementById('app'));
 root.render(_react2['default'].createElement(ChatApp, null));
 
-},{"./search/SearchResLi.jsx":2,"./search/search.jsx":3,"react":14,"react-dom/client":10}],2:[function(require,module,exports){
+},{"./Indexdb.jsx":1,"./createRoom/NewRoom.jsx":3,"./search/SearchResLi.jsx":4,"./search/search.jsx":5,"react":16,"react-dom/client":12}],3:[function(require,module,exports){
+'use strict';
+
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
+
+var _slicedToArray = (function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i['return']) _i['return'](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError('Invalid attempt to destructure non-iterable instance'); } }; })();
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+
+function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) arr2[i] = arr[i]; return arr2; } else { return Array.from(arr); } }
+
+var _react = require('react');
+
+var _react2 = _interopRequireDefault(_react);
+
+var _IndexdbJsx = require('../Indexdb.jsx');
+
+function NewRoomForm(_ref) {
+  var onCreateRoom = _ref.onCreateRoom;
+
+  var _useState = (0, _react.useState)('');
+
+  var _useState2 = _slicedToArray(_useState, 2);
+
+  var newRoomName = _useState2[0];
+  var setNewRoomName = _useState2[1];
+
+  var handleChange = function handleChange(e) {
+    setNewRoomName(e.target.value);
+  };
+
+  var handleSubmit = function handleSubmit(e) {
+    e.preventDefault();
+    if (!newRoomName.trim()) return;
+    onCreateRoom(newRoomName);
+    setNewRoomName('');
+    localStorage.setItem('' + newRoomName, newRoomName);
+  };
+
+  return _react2['default'].createElement(
+    'form',
+    { onSubmit: handleSubmit },
+    _react2['default'].createElement('input', {
+      type: 'text',
+      placeholder: '새로운 방 이름',
+      value: newRoomName,
+      onChange: handleChange
+    }),
+    _react2['default'].createElement(
+      'button',
+      { type: 'submit' },
+      '방 생성'
+    )
+  );
+}
+
+function NewRoom(_ref2) {
+  var get_roomName = _ref2.get_roomName;
+
+  var _useState3 = (0, _react.useState)(null);
+
+  var _useState32 = _slicedToArray(_useState3, 2);
+
+  var db = _useState32[0];
+  var setDb = _useState32[1];
+
+  var _useState4 = (0, _react.useState)([]);
+
+  var _useState42 = _slicedToArray(_useState4, 2);
+
+  var rooms = _useState42[0];
+  var setRooms = _useState42[1];
+
+  var _useState5 = (0, _react.useState)([]);
+
+  var _useState52 = _slicedToArray(_useState5, 2);
+
+  var prop = _useState52[0];
+  var setProp = _useState52[1];
+
+  var loadRooms = function loadRooms(database) {
+    (0, _IndexdbJsx.fetchRoomNames)(database, function (roomNames) {
+      setRooms(roomNames);
+    });
+  };
+
+  var handleCreateRoom = function handleCreateRoom(roomName) {
+    (0, _IndexdbJsx.createRoom)(roomName).then(function (newDb) {
+      setDb(newDb);
+      setRooms(function (prevRooms) {
+        var updatedRooms = [].concat(_toConsumableArray(prevRooms), [roomName]);
+        get_roomName(updatedRooms); // 상위 컴포넌트로 방 목록 업데이트
+        return updatedRooms;
+      });
+    })['catch'](function (error) {
+      console.error('Failed to create room', error);
+    });
+  };
+
+  return _react2['default'].createElement(
+    'div',
+    null,
+    _react2['default'].createElement(
+      'h1',
+      null,
+      '채팅방 목록'
+    ),
+    _react2['default'].createElement(NewRoomForm, { onCreateRoom: handleCreateRoom }),
+    _react2['default'].createElement(
+      'ul',
+      null,
+      rooms.map(function (room, index) {
+        return _react2['default'].createElement(
+          'li',
+          { key: index },
+          room
+        );
+      })
+    )
+  );
+}
+
+exports['default'] = NewRoom;
+module.exports = exports['default'];
+/* 방 생성 폼 컴포넌트 */ /* 방 목록 */
+
+},{"../Indexdb.jsx":1,"react":16}],4:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, '__esModule', {
@@ -368,7 +655,7 @@ function SearchResLi({ rooms, onRoomSelect }) {
 export default SearchResLi*/
 module.exports = exports['default'];
 
-},{"react":14}],3:[function(require,module,exports){
+},{"react":16}],5:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, '__esModule', {
@@ -429,7 +716,7 @@ function Search() {
 export default Search;*/
 module.exports = exports['default'];
 
-},{"./SearchResLi.jsx":2,"./searchBar.jsx":4,"react":14}],4:[function(require,module,exports){
+},{"./SearchResLi.jsx":4,"./searchBar.jsx":6,"react":16}],6:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, '__esModule', {
@@ -514,7 +801,7 @@ function SearchBar({setResults}) {
 export default SearchBar*/
 module.exports = exports['default'];
 
-},{"react":14}],5:[function(require,module,exports){
+},{"react":16}],7:[function(require,module,exports){
 // shim for using process in browser
 var process = module.exports = {};
 
@@ -700,7 +987,7 @@ process.chdir = function (dir) {
 };
 process.umask = function() { return 0; };
 
-},{}],6:[function(require,module,exports){
+},{}],8:[function(require,module,exports){
 (function (process){
 /**
  * @license React
@@ -38421,7 +38708,7 @@ if (
 }
 
 }).call(this,require('_process'))
-},{"_process":5,"react":14,"react-dom":11,"scheduler":17}],7:[function(require,module,exports){
+},{"_process":7,"react":16,"react-dom":13,"scheduler":19}],9:[function(require,module,exports){
 (function (process){
 /**
  * @license React
@@ -53167,7 +53454,7 @@ exports.hydrateRoot = function (container, initialChildren, options) {
 exports.version = "19.0.0-rc-935180c7e0-20240524";
 
 }).call(this,require('_process'))
-},{"_process":5,"react":14,"react-dom":11,"scheduler":17}],8:[function(require,module,exports){
+},{"_process":7,"react":16,"react-dom":13,"scheduler":19}],10:[function(require,module,exports){
 (function (process){
 /**
  * @license React
@@ -53806,7 +54093,7 @@ if (
 }
 
 }).call(this,require('_process'))
-},{"_process":5,"react":14}],9:[function(require,module,exports){
+},{"_process":7,"react":16}],11:[function(require,module,exports){
 /**
  * @license React
  * react-dom.production.js
@@ -54017,7 +54304,7 @@ exports.useFormStatus = function () {
 };
 exports.version = "19.0.0-rc-935180c7e0-20240524";
 
-},{"react":14}],10:[function(require,module,exports){
+},{"react":16}],12:[function(require,module,exports){
 (function (process){
 'use strict';
 
@@ -54059,7 +54346,7 @@ if (process.env.NODE_ENV === 'production') {
 }
 
 }).call(this,require('_process'))
-},{"./cjs/react-dom-client.development.js":6,"./cjs/react-dom-client.production.js":7,"_process":5}],11:[function(require,module,exports){
+},{"./cjs/react-dom-client.development.js":8,"./cjs/react-dom-client.production.js":9,"_process":7}],13:[function(require,module,exports){
 (function (process){
 'use strict';
 
@@ -54101,7 +54388,7 @@ if (process.env.NODE_ENV === 'production') {
 }
 
 }).call(this,require('_process'))
-},{"./cjs/react-dom.development.js":8,"./cjs/react-dom.production.js":9,"_process":5}],12:[function(require,module,exports){
+},{"./cjs/react-dom.development.js":10,"./cjs/react-dom.production.js":11,"_process":7}],14:[function(require,module,exports){
 (function (process){
 /**
  * @license React
@@ -56891,7 +57178,7 @@ if (
 }
 
 }).call(this,require('_process'))
-},{"_process":5}],13:[function(require,module,exports){
+},{"_process":7}],15:[function(require,module,exports){
 (function (process){
 /**
  * @license React
@@ -57434,7 +57721,7 @@ exports.useTransition = function () {
 exports.version = "19.0.0-rc-935180c7e0-20240524";
 
 }).call(this,require('_process'))
-},{"_process":5}],14:[function(require,module,exports){
+},{"_process":7}],16:[function(require,module,exports){
 (function (process){
 'use strict';
 
@@ -57445,7 +57732,7 @@ if (process.env.NODE_ENV === 'production') {
 }
 
 }).call(this,require('_process'))
-},{"./cjs/react.development.js":12,"./cjs/react.production.js":13,"_process":5}],15:[function(require,module,exports){
+},{"./cjs/react.development.js":14,"./cjs/react.production.js":15,"_process":7}],17:[function(require,module,exports){
 (function (process){
 /**
  * @license React
@@ -58070,7 +58357,7 @@ if (
 }
 
 }).call(this,require('_process'))
-},{"_process":5}],16:[function(require,module,exports){
+},{"_process":7}],18:[function(require,module,exports){
 /**
  * @license React
  * scheduler.production.js
@@ -58413,7 +58700,7 @@ exports.unstable_wrapCallback = function (callback) {
   };
 };
 
-},{}],17:[function(require,module,exports){
+},{}],19:[function(require,module,exports){
 (function (process){
 'use strict';
 
@@ -58424,4 +58711,4 @@ if (process.env.NODE_ENV === 'production') {
 }
 
 }).call(this,require('_process'))
-},{"./cjs/scheduler.development.js":15,"./cjs/scheduler.production.js":16,"_process":5}]},{},[1]);
+},{"./cjs/scheduler.development.js":17,"./cjs/scheduler.production.js":18,"_process":7}]},{},[2]);
