@@ -12,8 +12,8 @@ body {
 }
 .messages {
 	position: absolute;
-	bottom: 207px; /* 상단 여백 조절 */
-	left: 836px; /* 우측 여백 조절 */
+	bottom: 207px; 
+	left: 836px; 
 	width: 736px;
 	height: 601px;
 	margin: auto;  
@@ -38,8 +38,8 @@ body {
 }
 .textinput{
 	position: absolute;
-	bottom: 140px; /* 상단 여백 조절 */
-	left: 778px; /* 우측 여백 조절 */
+	bottom: 140px; 
+	left: 778px; 
 	margin-left: 3%;
 	width: 764px;
 	height: 65px;

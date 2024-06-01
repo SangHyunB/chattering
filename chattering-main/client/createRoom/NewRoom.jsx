@@ -1,8 +1,7 @@
-import React, { useState, useEffect } from 'react';
-import { createRoom, fetchRoomNames } from '../Indexdb.jsx';
+import React, { useState } from 'react';
+import { createRoom } from '../Indexdb.jsx';
 
-
-function NewRoomForm({ onCreateRoom }) {
+function NewRoomForm({ onCreateRoom }) {                    // 방생성 폼
   const [newRoomName, setNewRoomName] = useState('');
 
   const handleChange = (e) => {
@@ -17,8 +16,6 @@ function NewRoomForm({ onCreateRoom }) {
     localStorage.setItem(`${newRoomName}`,newRoomName);
   };
 
-  
-
   return (
     <form className='NewRoomForm' onSubmit={handleSubmit}>
       <input
@@ -30,20 +27,12 @@ function NewRoomForm({ onCreateRoom }) {
       />
       <button className='create_button' type="submit">방 생성</button>
     </form>
-   
   );
 }
 
-function NewRoom({ get_roomName }) {
+function NewRoom({ get_roomName }) {           // 방 생성 로직
   const [db, setDb] = useState(null);
   const [rooms, setRooms] = useState([]);
-  const [prop,setProp] = useState([]);
-
-  const loadRooms = (database) => {
-      fetchRoomNames(database, (roomNames) => {
-          setRooms(roomNames);
-      });
-  };
 
   const handleCreateRoom = (roomName) => {
     createRoom(roomName)
@@ -59,7 +48,6 @@ function NewRoom({ get_roomName }) {
         console.error('Failed to create room', error);
       });
   };
-
 
   return (
       <div>    

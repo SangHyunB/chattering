@@ -5,3 +5,11 @@
 .search_Res:hover{
     background-color: #fefefe;
 }
+.result{
+    cursor: pointer;
+    padding-left: 10px;
+}
+.result:hover{
+    background-color: #aaabad;
+    
+}

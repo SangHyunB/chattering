@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { createRoot } from 'react-dom/client';
 import SearchResLi from './search/SearchResLi.jsx';
 import Search from './search/search.jsx';
-import { fetchRoomNames, fetchRoomData, addData, createRoom } from './Indexdb.jsx'; // 수정된 부분
+import {fetchRoomData, addData} from './Indexdb.jsx';
 import NewRoom from './createRoom/NewRoom.jsx';
 
 const socket = io.connect();
@@ -29,7 +29,7 @@ function Message({ message }) {
     const isUser = message.user === username;
 
     return (
-        <div className={`message ${isUser ? 'message-user' : 'message-other'}`}>
+        <div className={`message ${isUser ? 'message-user' : 'message-other'}`}>     
             <div className='msgBlock'>
                 <strong>{message.user || "Guest"} :</strong> <span>{message.message || ""}</span>
                 <div>Sent at: {formattedTime}</div>
@@ -53,7 +53,6 @@ function MessageList({ messages}) {
         </div>
     );
 }
-
 
 
 function MessageForm({ onMessageSubmit, user, selectedRoom }) {
@@ -176,40 +175,36 @@ function ChatApp() {
 };
 
 
-    const handleRoomSelect = (roomName) => {
-        setSelectedRoom(roomName);
-        socket.emit('joinRoom', { room: roomName, username: user }); // 방에 접속
+const handleRoomSelect = (roomName) => {
+    setSelectedRoom(roomName);
+    socket.emit('joinRoom', { room: roomName, username: user }); // 방에 접속
 
-        // IndexedDB에서 선택한 방의 채팅 내용을 가져옵니다.
-        const request = indexedDB.open(roomName);
+    const request = indexedDB.open(roomName);
 
-        request.onsuccess = (event) => {
-            const db = event.target.result;
-            fetchRoomData(db, roomName, (chatMessages) => {
-                // 가져온 채팅 메시지를 시간 순서대로 정렬합니다.
-                chatMessages.sort((a, b) => new Date(a.time) - new Date(b.time));
-                // 선택한 방에 해당하는 메시지를 설정합니다.
-                setMessages({ [roomName]: chatMessages });
-                db.close();
-            });
-        };
-
-        request.onerror = (event) => {
-            console.error('Failed to open database', event.target.error);
-        };
+    request.onsuccess = (event) => {
+        const db = event.target.result;
+        fetchRoomData(db, roomName, (chatMessages) => {
+            chatMessages.sort((a, b) => new Date(a.time) - new Date(b.time));  // 가져온 채팅 메시지를 시간 순서대로 정렬
+            setMessages({ [roomName]: chatMessages });    // 선택한 방에 해당하는 메시지를 설정
+            db.close();
+        });
     };
 
-    return (
-        <div className='center'>
-            <Search setResults={setResults} rooms={rooms} />
-            <NewRoom get_roomName={get_roomName} />
-            <SearchResLi results={results} onRoomSelect={handleRoomSelect} />
-            <MessageList messages={messages} selectedRoom={selectedRoom} />
-            <MessageForm onMessageSubmit={handleMessageSubmit} user={user} selectedRoom={selectedRoom} />
-        </div>
+    request.onerror = (event) => {
+        console.error('Failed to open database', event.target.error);
+    };
+};
+
+return (
+    <div className='center'>
+        <Search setResults={setResults} rooms={rooms} />
+        <NewRoom get_roomName={get_roomName} />
+        <SearchResLi results={results} onRoomSelect={handleRoomSelect} />
+        <MessageList messages={messages} selectedRoom={selectedRoom} />
+        <MessageForm onMessageSubmit={handleMessageSubmit} user={user} selectedRoom={selectedRoom} />
+    </div>
     );
 }
 
-// ReactDOM rendering code
 const root = createRoot(document.getElementById('app'));
 root.render(<ChatApp />);

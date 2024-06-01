@@ -4,8 +4,8 @@
   width: 40%;
   margin: auto;
   position: relative;
-  top: 0px; /* 상단 여백 조절 */
-  right: 375px; /* 우측 여백 조절 */
+  top: 0px;
+  right: 375px; 
   flex-direction: column;
   align-items: center;
   min-width: 150px;

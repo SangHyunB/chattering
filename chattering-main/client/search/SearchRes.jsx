@@ -1,4 +1,4 @@
-import React from 'react'
+import React from 'react'   //검색결과 클릭시 발동
 
 function SearchRes({ rooms, onRoomSelect }) {
   return (

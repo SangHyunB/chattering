@@ -1,4 +1,4 @@
-import React from 'react';
+import React from 'react';       // 검색목록 리스트
 
 function SearchResLi({ results, onRoomSelect }) {
   return (
@@ -13,17 +13,3 @@ function SearchResLi({ results, onRoomSelect }) {
 }
 
 export default SearchResLi;
-
-/*import React from 'react'
-import SearchRes from './SearchRes.jsx'
-function SearchResLi({ rooms, onRoomSelect }) {
-  return (
-    <div className='res_list'>
-            {results.map((room,id)=>{
-                return <SearchRes result={room} onRoomSelect={onRoomSelect} key={id}/>
-            })}
-    </div>)
-}
-export default SearchResLi*/
-
-
