@@ -242,7 +242,6 @@ function MessageList(_ref3) {
     var messages = _ref3.messages;
 
     var messageRooms = Object.keys(messages);
-
     return _react2['default'].createElement(
         'div',
         { className: 'messages' },
@@ -299,7 +298,8 @@ function MessageForm(_ref4) {
                 placeholder: '메시지 입력',
                 className: 'textinput',
                 onChange: changeHandler,
-                value: text
+                value: text,
+                disabled: !selectedRoom // 방이 선택되지 않으면 입력 비활성화
             })
         )
     );
@@ -434,23 +434,15 @@ function ChatApp() {
             return;
         }
 
-        setMessages(function (prevMessages) {
-            var room = message.room;
-            var newMessages = _extends({}, prevMessages);
-            if (!newMessages[room]) {
-                newMessages[room] = [];
-            }
-            newMessages[room].push(message);
-            return newMessages;
-        });
-
         (0, _IndexdbJsx.addData)(message.room, message);
 
+        // 서버로 메시지 전송
         socket.emit('send:message', message);
     };
 
     var handleRoomSelect = function handleRoomSelect(roomName) {
         setSelectedRoom(roomName);
+        socket.emit('joinRoom', { room: roomName, username: user }); // 방에 접속
 
         // IndexedDB에서 선택한 방의 채팅 내용을 가져옵니다.
         var request = indexedDB.open(roomName);
@@ -479,7 +471,7 @@ function ChatApp() {
         _react2['default'].createElement(_searchSearchJsx2['default'], { setResults: setResults, rooms: rooms }),
         _react2['default'].createElement(_createRoomNewRoomJsx2['default'], { get_roomName: get_roomName }),
         _react2['default'].createElement(_searchSearchResLiJsx2['default'], { results: results, onRoomSelect: handleRoomSelect }),
-        _react2['default'].createElement(MessageList, { messages: messages }),
+        _react2['default'].createElement(MessageList, { messages: messages, selectedRoom: selectedRoom }),
         _react2['default'].createElement(MessageForm, { onMessageSubmit: handleMessageSubmit, user: user, selectedRoom: selectedRoom })
     );
 }

@@ -10,9 +10,6 @@ var http = require('http');
 var path = require('path');
 const fs = require('fs');
 
-
-var socket = require('./routes/socket.js');
-
 var app = express();
 var server = http.createServer(app);
 
@@ -75,15 +72,11 @@ app.post('/login', (req, res) => {
 
   // 사용자가 존재하는지 확인
   if (user) {
-   
-
-    res.redirect(`index.html?username=${user.username}&id=${user.id}`);
-  
+    res.redirect(`index.html?username=${user.username}`);
   } else {
       res.send('로그인 실패: 유저 정보가 일치하지 않습니다.');
   }
 });
-
 
 
 if (process.env.NODE_ENV === 'development') {
@@ -94,7 +87,27 @@ app.use(bodyParser.urlencoded({ extended: true }));
 
 /* Socket.io Communication */
 var io = require('socket.io').listen(server);
-io.sockets.on('connection', socket);
+
+io.on('connection', (socket) => {
+  console.log('A user connected');
+
+  socket.on('joinRoom', ({ room, username }) => {
+    socket.join(room);
+    console.log(`${username} joined room: ${room}`);
+    
+    // Broadcast to other users in the room that a user has joined
+    socket.to(room).emit('message', { user: username, text: `${username} has joined the chat` });
+  });
+
+  socket.on('send:message', (message) => {
+    io.to(message.room).emit('send:message', message);
+  });
+
+  socket.on('disconnect', () => {
+    console.log('A user disconnected');
+  });
+});
+
 
 /* Start server */
 server.listen(app.get('port'), function (){

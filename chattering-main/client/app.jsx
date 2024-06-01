@@ -28,25 +28,18 @@ function Message({ message }) {
     const username = urlParams.get('username');
     const isUser = message.user === username;
 
-   
     return (
-        <div className={`message ${isUser ? 'message-user' : 'message-other'}`}>      
-            <div className='msgBlock' >
+        <div className={`message ${isUser ? 'message-user' : 'message-other'}`}>
+            <div className='msgBlock'>
                 <strong>{message.user || "Guest"} :</strong> <span>{message.message || ""}</span>
                 <div>Sent at: {formattedTime}</div>
             </div>
         </div>
     );
-
-    
- 
-  
 }
 
-function MessageList({ messages }) {
+function MessageList({ messages}) {
     const messageRooms = Object.keys(messages);
-
-
     return (
         <div className='messages'>
             {messageRooms.map((roomName, roomIndex) => (
@@ -60,6 +53,8 @@ function MessageList({ messages }) {
         </div>
     );
 }
+
+
 
 function MessageForm({ onMessageSubmit, user, selectedRoom }) {
     const [text, setText] = useState('');
@@ -86,6 +81,7 @@ function MessageForm({ onMessageSubmit, user, selectedRoom }) {
                     className='textinput'
                     onChange={changeHandler}
                     value={text}
+                    disabled={!selectedRoom} // 방이 선택되지 않으면 입력 비활성화
                 />
             </form>
         </div>
@@ -99,7 +95,6 @@ function ChatApp() {
     const [rooms, setRooms] = useState([]);
     const [results, setResults] = useState([]);
     const [selectedRoom, setSelectedRoom] = useState(null);
-    
 
     useEffect(() => {
         socket.on('init', _initialize);
@@ -113,9 +108,9 @@ function ChatApp() {
             if (localStorage.hasOwnProperty(key)) { // 속성이 직접 소유한 것인지 확인
                 roomKeys.push(key);
             }
-          }
+        }
         console.log(roomKeys);
-        setRooms(roomKeys); 
+        setRooms(roomKeys);
 
         const queryString = window.location.search;
         const urlParams = new URLSearchParams(queryString);
@@ -134,16 +129,13 @@ function ChatApp() {
         };
     }, []);
 
-
-
-
     const _initialize = (data) => {
-        setUsers(data.users);   
+        setUsers(data.users);
     };
 
-    const get_roomName=(newRooms)=>{
+    const get_roomName = (newRooms) => {
         setRooms(prevRooms => [...prevRooms, ...newRooms]);
-    };    
+    };
 
     const _messageReceive = (message) => {
         setMessages((prevMessages) => {
@@ -157,7 +149,7 @@ function ChatApp() {
         });
     };
 
-    const _userJoin =(data) => {
+    const _userJoin = (data) => {
         if (data.user) {
             setUsers(prevUsers => [...prevUsers, data.user]);
         }
@@ -172,35 +164,25 @@ function ChatApp() {
     };
 
     const handleMessageSubmit = (message) => {
-        if (!message.user || !message.message || !message.time || !message.room) {
-            console.error("Invalid message data:", message);
-            return;
-        }
+    if (!message.user || !message.message || !message.time || !message.room) {
+        console.error("Invalid message data:", message);
+        return;
+    }
 
-        setMessages((prevMessages) => {
-            const room = message.room;
-            const newMessages = { ...prevMessages };
-            if (!newMessages[room]) {
-                newMessages[room] = [];
-            }
-            newMessages[room].push(message);
-            return newMessages;
-        });
-     
-              
-        addData(message.room, message); 
-            
-        socket.emit('send:message', message);
+    addData(message.room, message);
 
+    // 서버로 메시지 전송
+    socket.emit('send:message', message);
+};
 
-    };
 
     const handleRoomSelect = (roomName) => {
         setSelectedRoom(roomName);
-      
+        socket.emit('joinRoom', { room: roomName, username: user }); // 방에 접속
+
         // IndexedDB에서 선택한 방의 채팅 내용을 가져옵니다.
         const request = indexedDB.open(roomName);
-    
+
         request.onsuccess = (event) => {
             const db = event.target.result;
             fetchRoomData(db, roomName, (chatMessages) => {
@@ -211,18 +193,18 @@ function ChatApp() {
                 db.close();
             });
         };
-    
+
         request.onerror = (event) => {
             console.error('Failed to open database', event.target.error);
         };
     };
-   
+
     return (
-        <div className='center'>    
+        <div className='center'>
             <Search setResults={setResults} rooms={rooms} />
-            <NewRoom get_roomName={get_roomName}/>
+            <NewRoom get_roomName={get_roomName} />
             <SearchResLi results={results} onRoomSelect={handleRoomSelect} />
-            <MessageList messages={messages} />
+            <MessageList messages={messages} selectedRoom={selectedRoom} />
             <MessageForm onMessageSubmit={handleMessageSubmit} user={user} selectedRoom={selectedRoom} />
         </div>
     );
