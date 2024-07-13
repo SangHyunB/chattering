@@ -12,17 +12,17 @@ body {
 }
 .messages {
 	position: absolute;
-	bottom: 207px; 
-	left: 836px; 
+	top: 0%;
+	right: 0%;
 	width: 736px;
-	height: 601px;
+	height: 595px;
 	margin: auto;  
 	border : 1px solid rgb(35, 35, 150);
 	padding: 1em;
 	overflow-y: auto;
 	border-left-width: 6px;
 	border-top-right-radius: 10px;
-	border-width: 6px;
+	
 	border-right-color: rgb(35, 35, 150) ;
 	border-top-color: rgb(35, 35, 150) ;
 	
@@ -33,20 +33,22 @@ body {
 	padding: 1em;
 }
 .center{
+	position: relative;
 	width: 1300px;
 	height: 700px;
 }
 .textinput{
 	position: absolute;
-	bottom: 140px; 
-	left: 778px; 
+	bottom: 0%;
+	right: 0%;
 	margin-left: 3%;
 	width: 764px;
-	height: 65px;
+	height: 67px;
+	border: 1px solid rgb(35, 35, 150);
 	border-left-width: 6px;
 	border-bottom-right-radius: 10px;
-	border: 10px solid rgb(35, 35, 150);
-	border-width: 6px;
+	
+	
 }
 .NewRoomForm{
 	
